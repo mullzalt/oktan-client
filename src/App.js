@@ -1,204 +1,59 @@
-import React, { useState } from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Router } from 'react-router-dom';
+
+
 import './App.css';
-import { Button, IconButton, Paper, TextField, Typography } from '@mui/material';
-import { Image } from '@mui/icons-material';
-import UploadModal from './components/files/UploadModal';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { useTitle } from './components/hooks/useDocumentTitle';
+import LayoutMain from './components/Layout/Main/LayoutMain';
+import ScrollTop from './components/ScrollTop';
+import RequireAuth from './features/auth/RequireAuth';
+import UsersAdminPage from './pages/admin/UsersAdminPage';
+import Login from './pages/Auths/Login';
+import RegisterPage from './pages/Auths/RegisterPage';
+import CbtMain from './pages/Cbt/CbtMain';
+import CbtPanel from './pages/Cbt/CbtPanel';
+import DashboardMain from './pages/DashboardMain';
 
-
-const testData = [
-  {
-    id: 1,
-    question: 'manakah dibawah ini yang panjang?',
-    imgUrl: '',
-    options: [
-      { id: 1, option: '1', imgUrl: '' },
-      { id: 2, option: '2', imgUrl: '' },
-      { id: 3, option: '3', imgUrl: '' },
-      { id: 4, option: '4', imgUrl: '' },
-    ],
-    answer: {
-      id: 4
-    }
-  },
-  {
-    id: 2,
-    question: 'manakah dibawah ini yang pendek?',
-    imgUrl: '',
-    options: [
-      { id: 1, option: 'kanjut', imgUrl: '' },
-      { id: 2, option: 'memek', imgUrl: '' },
-      { id: 3, option: 'bau', imgUrl: '' },
-      { id: 4, option: 'henceut', imgUrl: '' },
-    ],
-    answer: {
-      id: 2
-    }
-  },
-  {
-    id: 1,
-    question: 'manakah dibawah ini yang sedang?',
-    imgUrl: '',
-    options: [
-      { id: 1, option: 'kutu', imgUrl: '' },
-      { id: 2, option: 'buku', imgUrl: '' },
-      { id: 3, option: 'sia', imgUrl: '' },
-      { id: 4, option: 'anking', imgUrl: '' },
-    ],
-    answer: {
-      id: 2
-    }
-  }
-]
-
-
-
-const QuestionForms = (props) => {
-  const [question, setQuestion] = useState()
-  const [options, setOptions] = useState([])
-  const [answer, setAnswer] = useState()
-
-  const { register, handleSubmit, control } = useForm({
-    defaultValues: {
-      options: [{ id: null, option: '', imgUrl: 'https://cdn.britannica.com/16/234216-050-C66F8665/beagle-hound-dog.jpg' }]
-    }
-  })
-  const { fields, append, prepend, remove, swap, move, insert } = useFieldArray({
-    control,
-    name: "options",
-  });
-
-
-  return (
-    <form onSubmit={handleSubmit(props.onSubmit)}>
-
-      <p>Question</p>
-      <input key={'test'} {...register('question')}>
-      </input>
-
-
-      <p>Options</p>
-
-      {fields.map((field, index) => {
-        return (
-          <li key={field.id}>
-            <input {...register(`options.${index}.option`)}>
-            </input>
-
-            <input  {...register(`options.${index}.imgUrl`)}>
-            </input>
-
-            <button type='button' onClick={() => remove(index)}>
-              remove
-            </button>
-
-            <input
-              {...register('answer')}
-              type='radio'
-              value={index}
-
-            />
-
-          </li>
-        )
-      })}
-
-      <button type='button' onClick={() => append({
-        option: 'test',
-        imgUrl: 'https://cdn.britannica.com/16/234216-050-C66F8665/beagle-hound-dog.jpg'
-      })}>Append</button>
-
-      <input type={'submit'} />
-
-    </form>
-  )
-
-}
-
-const QuestionInput = (props) => {
-  return (
-    <div>
-
-      <IconButton
-        color='primary'
-        aria-label='upload images'
-        component="label"
-      >
-        <input hidden accept='image/*' type={'file'}></input>
-        <Image />
-      </IconButton>
-      <TextField
-        id={props.id}
-        label={props.label}
-        value={props.value}
-        onChange={props.onChange}
-      >
-
-      </TextField>
-
-    </div>
-  )
-}
-
-const QuestionContainer = (props) => {
-
-
-  return (
-    <>
-      <Paper elevation={3} sx={{
-        padding: 2,
-        alignContent: 'left'
-      }}>
-        <Typography variant='p' component={"p"}>
-          {props.question}
-        </Typography>
-
-        <div>
-          {
-            props.options.map((item, key) => {
-              return (
-                <Button variant='contained'>
-                  {item.option}
-                </Button>
-              )
-            })
-          }
-
-        </div>
-      </Paper>
-    </>
-  )
-}
 
 function App() {
-  const [test, setTest] = useState(testData)
-
-  const onSubmit = (data) => {
-    console.log(test)
-    setTest(prev => [...prev, data])
-  }
-
   return (
-    <div className="App">
+    <BrowserRouter>
+    <ScrollTop>
 
-      <QuestionForms onSubmit={onSubmit} />
+    <Routes>
 
-      <br></br>
-      <br></br>
-      <br></br>
+      <Route path='/'>
+        <Route path='login' element={<Login/>} />
+        <Route path='register' element={<RegisterPage/>} />
+      </Route>
 
-      {test && test.map((data, key) => {
-        return (
-          <QuestionContainer question={data.question} options={data.options}>
-          </QuestionContainer>
+      <Route path='/dashboard' element={<RequireAuth/>}>
+          <Route index element={<DashboardMain/>} />
+      </Route>
 
-        )
 
-      })}
+      <Route path='/moderator' element={<RequireAuth/>}>
+          <Route index element={<DashboardMain/>} />
+          <Route path='cbts'>
+            <Route index element={<CbtMain/>}/>
+            <Route path=':id' element={<CbtPanel/>}/>
+          </Route>
+      </Route>
 
-    </div>
+      <Route path='/admin' element={<RequireAuth/>}>
+          <Route index element={<DashboardMain/>} />
+          <Route path='users'>
+              <Route index element={<UsersAdminPage/>}/>
+              <Route path=':username'/>
+          </Route>
+      </Route>
+
+
+
+    </Routes>
+
+    </ScrollTop>
+    </BrowserRouter>
   );
 }
 

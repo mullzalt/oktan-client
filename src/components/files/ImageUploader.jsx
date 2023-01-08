@@ -41,8 +41,8 @@ export const AddImage = (props) => {
                 <input {...getInputProps()} />
                 {isDragActive ? (
                     <>
-                        <Photo sx={{ justifySelf: 'center', color: 'primary', fontSize: '60px' }} />
-                        <p style={{ color: 'green' }}>Drop the files here...</p>
+                        <Photo sx={{ justifySelf: 'center', color: 'info', fontSize: '60px' }} />
+                        <p style={{ color: 'info' }}>Drop the image here...</p>
                     </>
                 ) : (
                     <>
@@ -58,19 +58,6 @@ export const AddImage = (props) => {
     )
 }
 
-export const ImagePreview = (props) => {
-    const { imageUrl, alt } = props
-
-    return (
-        <>
-            <img
-                src={imageUrl}
-                alt={alt}
-                loading="lazy"
-            />
-        </>
-    )
-}
 
 const ImageUploader = () => {
     return (
