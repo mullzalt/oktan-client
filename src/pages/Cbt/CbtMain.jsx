@@ -1,9 +1,11 @@
-import { Box } from '@mui/material'
+import { Box, Divider, Grid, ListItem, Typography } from '@mui/material'
 import { Stack } from '@mui/system'
 import React, { useEffect } from 'react'
 import CbtCard from '../../components/Cbt/CbtCard'
 import useDocumentTitle from '../../components/hooks/useDocumentTitle'
 import useFormatDate from '../../components/hooks/useFormatDate'
+import Spinner from '../../components/Spinner'
+import { useGetCbtsQuery } from '../../features/cbts/cbtSlice'
 
 
 const cbtData = [
@@ -37,30 +39,82 @@ const CbtMain = () => {
     useDocumentTitle('CBT')
     const formatDate = useFormatDate()
 
+    const { data, isLoading, refetch, isFetching } = useGetCbtsQuery({}, {
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true
+    })
+
 
     return (
-        <div>
+        <>
+
+            <Spinner open={isLoading || isFetching} />
 
             <Stack spacing={6}>
-                {
-                    cbtData.map((data, index) => {
+                {data &&
+                    data.rows.map((row) => {
                         return (
-                            <CbtCard key={data.id}
-                                id={data.id}
-                                title={data.title}
-                                subHeader={formatDate(data.startDate)}
-                                imgUrl={data.imgUrl}
+                            <CbtCard key={row.id}
+                                id={row.id}
+                                title={row.title}
+                                subHeader={formatDate(row.startDate)}
+                                imgUrl={row.imgUrl}
                             >
-                                <Box sx={{ p: 4 }}>
-                                    Test
+                                <Box padding={4}>
+                                    <Grid container direction={'row'} padding={1} alignItems={'baseline'}>
+                                        <Grid item xs={4}>
+                                            <Typography variant='h6'>Title</Typography>
+                                        </Grid>
+                                        <Grid item xs={8}>
+                                            <Typography variant='body' fontWeight={'bold'} fontStyle={'italic'}>{row.title}</Typography>
+                                        </Grid>
+                                    </Grid>
+                                    <Divider />
+
+                                    <Grid container direction={'row'} padding={1} alignItems={'baseline'}>
+                                        <Grid item xs={4}>
+                                            <Typography fontWeight={'bold'}>Start Date</Typography>
+                                        </Grid>
+                                        <Grid item xs={8}>
+                                            <Typography variant='body'>{formatDate(row.startDate)}</Typography>
+                                        </Grid>
+                                    </Grid>
+
+                                    <Grid container direction={'row'} padding={1} alignItems={'baseline'}>
+                                        <Grid item xs={4}>
+                                            <Typography fontWeight={'bold'}>Closed Date</Typography>
+                                        </Grid>
+                                        <Grid item xs={8}>
+                                            <Typography variant='body'>{formatDate(row.endDate)}</Typography>
+                                        </Grid>
+                                    </Grid>
+
+                                    <Grid container direction={'row'} padding={1} alignItems={'baseline'}>
+                                        <Grid item xs={4}>
+                                            <Typography fontWeight={'bold'}>Duration</Typography>
+                                        </Grid>
+                                        <Grid item xs={8}>
+                                            <Typography variant='body'>{row.duration} Minutes</Typography>
+                                        </Grid>
+                                    </Grid>
+
+                                    <Grid container direction={'row'} padding={1} alignItems={'baseline'}>
+                                        <Grid item xs={4}>
+                                            <Typography fontWeight={'bold'}>Options</Typography>
+                                        </Grid>
+                                        <Grid item xs={8}>
+                                            <Typography variant='body'>{row.optionCount} options</Typography>
+                                        </Grid>
+                                    </Grid>
                                 </Box>
+
                             </CbtCard>
                         )
                     })
                 }
             </Stack>
 
-        </div>
+        </>
     )
 }
 

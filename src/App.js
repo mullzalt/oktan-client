@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Router } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 import './App.css';
@@ -15,12 +17,15 @@ import CbtPanel from './pages/Cbt/CbtPanel';
 import DashboardMain from './pages/DashboardMain';
 
 
+
 function App() {
   return (
     <BrowserRouter>
+    <ToastContainer/>
     <ScrollTop>
-
+    
     <Routes>
+      
 
       <Route path='/'>
         <Route path='login' element={<Login/>} />

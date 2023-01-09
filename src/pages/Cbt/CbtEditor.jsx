@@ -3,11 +3,15 @@ import { Box, Button, Grid, InputAdornment, Paper, Stack, TextField, Typography 
 import { Container } from '@mui/system'
 import React from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import moment from 'moment'
+
+
 import ImageEditor from '../../components/Files/ImageEditor'
 
 import TitleIcon from '@mui/icons-material/Title';
 import TransferList from '../../components/Files/TransferList'
 import SpeedDialTooltipOpen from '../../components/Menu/SpeedDialAction'
+import { LoadingButton } from '@mui/lab'
 
 const cbtData = {
     id: 'adsf-sdflk-1232',
@@ -26,183 +30,160 @@ const cbtData = {
 
 
 
-const CbtEditor = () => {
-    const data = cbtData
+const CbtEditor = props => {
+
+    const { data, onSave, isLoading } = props
+
     const { control, handleSubmit, formState: { errors } } = useForm({
         defaultValues: {
-            title: '',
-            startDate: new Date(),
-            endDate: new Date(),
-            optionCount: '',
-            rules: {
-                onCorrect: '',
-                onWrong: '',
-                onNull: ''
-            },
-            duration: '',
-            requiredCompetition: [],
-            coverImg: ''
+            title: data?.title || '',
+            startDate: moment(data?.startDate).format('YYYY-MM-DDThh:mm') || '',
+            endDate: moment(data?.endDate).format('YYYY-MM-DDThh:mm') || '',
+            optionCount: data?.optionCount || '',
+            duration: data?.duration || '',
+            imgUrl: data?.imgUrl || '',
         },
         mode: 'onChange'
     })
 
-    const handleCbt = (data) => {
-        console.log(data)
-    }
-
-
-
     return (
-        <Box sx={{ py: 4 }}>
-            <form onSubmit={handleSubmit(handleCbt,)}>
-                <Grid container spacing={4} columns={12}>
-                    <Grid item key={'image-editor'} sm={12} md={6}>
-                        <ImageEditor imageUrl={data.imgUrl} title={'Cover Image'} />
-                    </Grid>
-                    <Grid item key={'form-editor'} sm={12} md={6}>
-                        <Stack spacing={4}>
-                            <Typography variant='h6'>Detail</Typography>
-
-                            <Controller
-                                name="title"
-                                control={control}
-                                rules={{ required: 'Please enter a title' }}
-                                render={({ field: { ref, ...field } }) => (
-                                    <TextField
-                                        {...field}
-                                        inputRef={ref}
-                                        id="title"
-                                        variant="outlined"
-                                        fullWidth
-                                        label="Title"
-                                        error={!!errors.title}
-                                        helperText={errors?.title?.message}
-                                        InputProps={{
-                                            endAdornment: (
-                                                <InputAdornment>
-                                                    <TitleIcon />
-                                                </InputAdornment>
-                                            ),
-                                        }}
-                                    />
-                                )}
-                            />
-
-                            <Controller
-                                name="startDate"
-                                control={control}
-                                rules={{ required: 'Please enter a Test Begin Date!' }}
-                                render={({ field: { ref, ...field } }) => (
-                                    <TextField
-                                        {...field}
-                                        inputRef={ref}
-                                        id="startDate"
-                                        variant="outlined"
-                                        label="Test Begin Date and Time"
-                                        type="datetime-local"
-                                        fullWidth
-                                        error={!!errors.startDate}
-                                        helperText={errors?.startDate?.message}
-                                        InputLabelProps={{
-                                            shrink: true,
-                                        }}
-                                    />
-                                )}
-                            />
-
-                            <Controller
-                                name="endDate"
-                                control={control}
-                                rules={{ required: 'Please enter a Test closed Date!' }}
-                                render={({ field: { ref, ...field } }) => (
-                                    <TextField
-                                        {...field}
-                                        inputRef={ref}
-                                        id="endDate"
-                                        variant="outlined"
-                                        label="Test Closed Date and Time"
-                                        type="datetime-local"
-                                        fullWidth
-                                        error={!!errors.endDate}
-                                        helperText={errors?.endDate?.message}
-                                        InputLabelProps={{
-                                            shrink: true,
-                                        }}
-                                    />
-                                )}
-                            />
-
-                            <Controller
-                                name="duration"
-                                control={control}
-                                rules={{ required: 'Please enter duration!' }}
-                                render={({ field: { ref, ...field } }) => (
-                                    <TextField
-                                        {...field}
-                                        inputRef={ref}
-                                        id="duration"
-                                        variant="outlined"
-                                        label="Duration (Minutes)"
-                                        type="number"
-                                        fullWidth
-                                        error={!!errors.duration}
-                                        helperText={errors?.duration?.message}
-                                        InputProps={{
-                                            endAdornment: (
-                                                <InputAdornment>
-                                                    <Typography>m</Typography>
-                                                </InputAdornment>
-                                            ),
-                                        }}
-                                    />
-                                )}
-                            />
-
-                            <Controller
-                                name="optionCount"
-                                control={control}
-                                rules={{ required: 'Please enter optionCount!' }}
-                                render={({ field: { ref, ...field } }) => (
-                                    <TextField
-                                        {...field}
-                                        inputRef={ref}
-                                        id="optionCount"
-                                        variant="outlined"
-                                        label="Number of options"
-                                        type="number"
-                                        fullWidth
-                                        error={!!errors.optionCount}
-                                        helperText={errors?.optionCount?.message}
-                                        InputProps={{
-                                            endAdornment: (
-                                                <InputAdornment>
-                                                    <Typography>choices</Typography>
-                                                </InputAdornment>
-                                            ),
-                                        }}
-                                    />
-                                )}
-                            />
-
-                            <Button type='submit'>
-                                Send
-                            </Button>
-
-
-                        </Stack>
-
-                    </Grid>
-                    <Grid item sm={12} md={12}>
-                        <Typography variant='h6'>Required Competitions</Typography>
-                    </Grid>
-                    <Grid item sm={12} md={12}>
-                        <TransferList />
-                    </Grid>
+        <Box sx={{ py: 4 }} component={'form'} onSubmit={handleSubmit(onSave)}>
+            <Grid container spacing={4} columns={12}>
+                <Grid item key={'image-editor'} sm={12} md={6}>
+                    <ImageEditor imageUrl={''} title={'Cover Image'} />
                 </Grid>
+                <Grid item key={'form-editor'} sm={12} md={6}>
+                    <Stack spacing={4}>
+                        <Typography variant='h6'>Detail</Typography>
 
-                <SpeedDialTooltipOpen />
+                        <Controller
+                            name="title"
+                            control={control}
+                            rules={{ required: 'Please enter a title' }}
+                            render={({ field: { ref, ...field } }) => (
+                                <TextField
+                                    {...field}
+                                    inputRef={ref}
+                                    id="title"
+                                    variant="outlined"
+                                    fullWidth
+                                    label="Title"
+                                    error={!!errors.title}
+                                    helperText={errors?.title?.message}
 
-            </form>
+                                />
+                            )}
+                        />
+
+                        <Controller
+                            name="startDate"
+                            control={control}
+                            rules={{ required: 'Please enter a Test Begin Date!' }}
+                            render={({ field: { ref, ...field } }) => (
+                                <TextField
+                                    {...field}
+                                    inputRef={ref}
+                                    id="startDate"
+                                    variant="outlined"
+                                    label="Test Begin"
+                                    type="datetime-local"
+                                    fullWidth
+                                    error={!!errors.startDate}
+                                    helperText={errors?.startDate?.message}
+                                    InputLabelProps={{
+                                        shrink: true,
+                                    }}
+                                />
+                            )}
+                        />
+
+                        <Controller
+                            name="endDate"
+                            control={control}
+                            rules={{ required: 'Please enter a Test closed Date!' }}
+                            render={({ field: { ref, ...field } }) => (
+                                <TextField
+                                    {...field}
+                                    inputRef={ref}
+                                    id="endDate"
+                                    variant="outlined"
+                                    label="Test Closed"
+                                    type="datetime-local"
+                                    fullWidth
+                                    error={!!errors.endDate}
+                                    helperText={errors?.endDate?.message}
+                                    InputLabelProps={{
+                                        shrink: true,
+                                    }}
+                                />
+                            )}
+                        />
+
+                        <Controller
+                            name="duration"
+                            control={control}
+                            rules={{ required: 'Please enter duration!' }}
+                            render={({ field: { ref, ...field } }) => (
+                                <TextField
+                                    {...field}
+                                    inputRef={ref}
+                                    id="duration"
+                                    variant="outlined"
+                                    label="Duration (Minutes)"
+                                    type="number"
+                                    fullWidth
+                                    error={!!errors.duration}
+                                    helperText={errors?.duration?.message}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment>
+                                                <Typography>minutes</Typography>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
+                            )}
+                        />
+
+                        <Controller
+                            name="optionCount"
+                            control={control}
+                            rules={{ required: 'Please enter optionCount!' }}
+                            render={({ field: { ref, ...field } }) => (
+                                <TextField
+                                    {...field}
+                                    inputRef={ref}
+                                    id="optionCount"
+                                    variant="outlined"
+                                    label="Number of options"
+                                    type="number"
+                                    fullWidth
+                                    error={!!errors.optionCount}
+                                    helperText={errors?.optionCount?.message}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment>
+                                                <Typography>choices</Typography>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
+                            )}
+                        />
+
+                        <LoadingButton type='submit'
+                            fullWidth
+                            loading={isLoading}
+                            variant="contained"
+                        >
+                            Update
+                        </LoadingButton>
+
+
+                    </Stack>
+
+                </Grid>
+            </Grid>
         </Box>
     )
 }

@@ -3,6 +3,8 @@ import PropTypes from 'prop-types'
 import { Button, Card, CardActionArea, CardActions, CardContent, CardHeader, CardMedia, Divider, ImageList, ImageListItem, ImageListItemBar, ListItemIcon, ListItemText, MenuItem, Typography } from '@mui/material'
 import MenuAction from '../Menu/MenuAction'
 import { Clear, Edit, Remove } from '@mui/icons-material'
+import defaultImage from '../../assets/img/default-pictures.png'
+import { blueGrey } from '@mui/material/colors'
 
 const ImagePreview = () => {
 
@@ -11,6 +13,8 @@ const ImagePreview = () => {
 
 const ImageEditor = props => {
     const { title, imageUrl } = props
+
+    const image = imageUrl ? imageUrl : defaultImage
 
     return (
         <Card>
@@ -44,9 +48,12 @@ const ImageEditor = props => {
             <CardActionArea>
                 <CardMedia
                     component={'img'}
-
-                    image={imageUrl}
+                    image={image}
                     alt={title}
+                    sx={{
+                        maxHeight: 512,
+                        backgroundColor: blueGrey[200]
+                    }}
                 />
 
             </CardActionArea>

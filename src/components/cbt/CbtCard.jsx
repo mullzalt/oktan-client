@@ -5,6 +5,8 @@ import MenuAction from '../Menu/MenuAction'
 import EditIcon from '@mui/icons-material/Edit';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import { useNavigate } from 'react-router-dom';
+import EmptyImage from '../../assets/img/default-pictures.png'
+import { blueGrey } from '@mui/material/colors';
 
 
 const CbtCard = props => {
@@ -15,11 +17,13 @@ const CbtCard = props => {
         navigate(id)
     }
 
+    const image = imgUrl ? imgUrl : EmptyImage
+
 
 
     return (
 
-        <Card sx={{ boxShadow: 4 }}>
+        <Card sx={{ boxShadow: 4, borderRadius: 4 }}>
             <CardHeader
                 action={
                     <MenuAction tooltip={'Open CBT menu setting'}>
@@ -50,21 +54,24 @@ const CbtCard = props => {
 
 
 
+
             </CardHeader>
             <Divider />
 
             <Grid container spacing={1}>
-                <Grid item md={12} lg={6}>
+                <Grid item sm={12} md={12} lg={6}>
                     <CardMedia
                         component="img"
-                        image={imgUrl}
+                        image={image}
                         alt={title}
                         sx={{
-                            width: 1,
+                            maxHeight: 512,
+                            backgroundColor: blueGrey[400]
+
                         }}
                     />
                 </Grid>
-                <Grid item md={12} lg={6} padding={4}>
+                <Grid item sm={12} md={12} lg={6} padding={4}>
                     {children}
                 </Grid>
             </Grid>

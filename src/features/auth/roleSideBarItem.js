@@ -17,7 +17,7 @@ const sideBarList = {
         <ListSubheader>Competitions Management</ListSubheader>
         <ListItemLink to='/moderator/competitions' primary='Competitions' icon={<MilitaryTech/>}  />
         <ListItemLink to='/moderator/competitions' primary='Papers' icon={<HistoryEdu/>}  />
-        <ListItemLink to='/moderator/competitions' primary='CBT' icon={<LocalLibrary/>}  />
+        <ListItemLink to='/moderator/cbts' primary='CBT' icon={<LocalLibrary/>}  />
       
         <ListSubheader>Payments Management</ListSubheader>
         <ListItemLink to='/moderator/invoices' primary='Payment Log' icon={<CreditCard/>}  />
