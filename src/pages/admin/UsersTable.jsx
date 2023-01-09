@@ -68,7 +68,7 @@ const UserTableAdmin = ({ sx }) => {
     }
 
     return (
-        <Box sx={{ ...sx }}>
+        <Box sx={{ ...sx, }}>
 
             <Spinner open={isLoading || isFetching} />
 
@@ -80,6 +80,7 @@ const UserTableAdmin = ({ sx }) => {
                         <Grid item md={4} xs={12} sm={8}>
                             <SearchAppBar
                                 onChange={handleSeachChange}
+                                placeholder={'Search user...'}
                             />
                         </Grid>
 
