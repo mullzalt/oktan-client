@@ -14,7 +14,7 @@ export const cbtSlice = apiSlice.injectEndpoints({
         }),
         getCbtById: builder.query({
             query: (payload) => {
-                const {id, params} = payload
+                const { id, params } = payload
                 return {
                     url: `/cbts/${id}`,
                     method: 'GET',
@@ -24,9 +24,29 @@ export const cbtSlice = apiSlice.injectEndpoints({
         }),
         updateCbt: builder.mutation({
             query: (payload) => {
-                const {id, body} = payload
+                const { id, body } = payload
                 return {
                     url: `/cbts/${id}`,
+                    method: 'PUT',
+                    body: body
+                }
+            }
+        }),
+        createeCbt: builder.mutation({
+            query: (payload) => {
+                const { body } = payload
+                return {
+                    url: `/cbts`,
+                    method: 'POST',
+                    body: body
+                }
+            }
+        }),
+        updateCbtCover: builder.mutation({
+            query: (payload) => {
+                const { id, body } = payload
+                return {
+                    url: `/cbts/${id}/images`,
                     method: 'PUT',
                     body: body
                 }
@@ -39,7 +59,9 @@ export const cbtSlice = apiSlice.injectEndpoints({
 })
 
 export const {
-    useGetCbtsQuery, 
+    useGetCbtsQuery,
     useGetCbtByIdQuery,
-    useUpdateCbtMutation
+    useUpdateCbtMutation,
+    useUpdateCbtCoverMutation,
+    useCreateeCbtMutation
 } = cbtSlice

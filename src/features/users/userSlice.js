@@ -13,10 +13,21 @@ export const userSlice = apiSlice.injectEndpoints({
             }
         }),
 
+        getMe: builder.query({
+            query: (params) => {
+                return {
+                    url: `/me`,
+                    method: 'GET',
+                    params: params
+                }
+            }
+        }),
+
 
     })
 })
 
 export const {
     useGetUsersQuery,
+    useGetMeQuery
 } = userSlice

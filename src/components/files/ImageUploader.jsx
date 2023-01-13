@@ -1,15 +1,15 @@
 import { Camera, Photo } from "@mui/icons-material"
-import { Paper, Box } from "@mui/material"
+import { Paper, Box, Typography } from "@mui/material"
 import { useCallback, useState } from "react"
 import { useDropzone } from "react-dropzone"
 
 
-export const AddImage = (props) => {
+export const ImageDropZone = (props) => {
     const [file, setFile] = useState(null)
 
     const onDrop = useCallback((acceptedFile) => {
-        setFile(acceptedFile)
-        props.onFileUploaded(acceptedFile)
+        setFile(acceptedFile[0])
+        props.onDrop(acceptedFile)
     }, [])
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -42,12 +42,12 @@ export const AddImage = (props) => {
                 {isDragActive ? (
                     <>
                         <Photo sx={{ justifySelf: 'center', color: 'info', fontSize: '60px' }} />
-                        <p style={{ color: 'info' }}>Drop the image here...</p>
+                        <Typography fontWeight={'bold'} color={'info'}>Drop image here...</Typography>
                     </>
                 ) : (
                     <>
                         <Photo sx={{ justifySelf: 'center', fontSize: '60px' }} />
-                        <p>Drag and Drop an image here, or click to select files</p>
+                        <Typography fontWeight={'body'}>Drag and Drop an image here, or click to select files</Typography>
                     </>
                 )}
                 <em>(images with *.jpeg, *.png, *.jpg extension will be accepted)</em>
@@ -58,11 +58,4 @@ export const AddImage = (props) => {
     )
 }
 
-
-const ImageUploader = () => {
-    return (
-        <div>ImageUploader</div>
-    )
-}
-
-export default ImageUploader
+export default ImageDropZone

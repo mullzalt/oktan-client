@@ -1,58 +1,43 @@
 import { AccountCircle } from '@mui/icons-material'
-import { Box, Button, Grid, InputAdornment, Paper, Stack, TextField, Typography } from '@mui/material'
-import { Container } from '@mui/system'
+import { Box, Button, Grid, InputAdornment, Modal, Paper, Stack, TextField, Typography } from '@mui/material'
+
 import React from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import moment from 'moment'
+import PropTypes from 'prop-types'
 
-
-import ImageEditor from '../../components/Files/ImageEditor'
-
-import TitleIcon from '@mui/icons-material/Title';
-import TransferList from '../../components/Files/TransferList'
-import SpeedDialTooltipOpen from '../../components/Menu/SpeedDialAction'
 import { LoadingButton } from '@mui/lab'
 
-const cbtData = {
-    id: 'adsf-sdflk-1232',
-    title: 'FUCK YOU anjing sia bangsat setan',
-    startDate: "	2023-07-01 09:55:51",
-    endDate: "	2023-09-01 09:55:51",
-    duration: 60,
-    requireCompetition: [
-        { id: 1 },
-        { id: 2 },
-    ],
-    memberCount: 90,
-    imgUrl: 'https://img.freepik.com/free-vector/colourful-science-work-concept_23-2148539571.jpg?w=2000'
-}
 
 
 
 
 const CbtEditor = props => {
 
-    const { data, onSave, isLoading } = props
+    const { data, onSave, isLoading, onCancel, variant } = props
 
     const { control, handleSubmit, formState: { errors } } = useForm({
         defaultValues: {
             title: data?.title || '',
-            startDate: moment(data?.startDate).format('YYYY-MM-DDThh:mm') || '',
-            endDate: moment(data?.endDate).format('YYYY-MM-DDThh:mm') || '',
+            startDate: data ? moment(data?.startDate).format('YYYY-MM-DDThh:mm') : '',
+            endDate: data ? moment(data?.endDate).format('YYYY-MM-DDThh:mm') : '',
             optionCount: data?.optionCount || '',
             duration: data?.duration || '',
             imgUrl: data?.imgUrl || '',
+            onCorrectPoint: data?.onCorrectPoint || 0,
+            onNullPoint: data?.onNullPoint || 0,
+            onWrongPoint: data?.onWrongPoint || 0,
         },
         mode: 'onChange'
     })
 
     return (
         <Box sx={{ py: 4 }} component={'form'} onSubmit={handleSubmit(onSave)}>
+
+
+
             <Grid container spacing={4} columns={12}>
-                <Grid item key={'image-editor'} sm={12} md={6}>
-                    <ImageEditor imageUrl={''} title={'Cover Image'} />
-                </Grid>
-                <Grid item key={'form-editor'} sm={12} md={6}>
+                <Grid item key={'rules-editor'} xs={12} sm={12} md={6}>
                     <Stack spacing={4}>
                         <Typography variant='h6'>Detail</Typography>
 
@@ -148,7 +133,7 @@ const CbtEditor = props => {
                         <Controller
                             name="optionCount"
                             control={control}
-                            rules={{ required: 'Please enter optionCount!' }}
+                            rules={{ required: 'Please enter option counts!' }}
                             render={({ field: { ref, ...field } }) => (
                                 <TextField
                                     {...field}
@@ -171,21 +156,126 @@ const CbtEditor = props => {
                             )}
                         />
 
-                        <LoadingButton type='submit'
-                            fullWidth
-                            loading={isLoading}
-                            variant="contained"
-                        >
-                            Update
-                        </LoadingButton>
+
+
+
 
 
                     </Stack>
 
                 </Grid>
+                <Grid item key={'form-editor'} xs={12} sm={12} md={6}>
+                    <Stack gap={4}>
+
+                        <Typography variant='h6'>Rules</Typography>
+                        <Controller
+                            name="onCorrectPoint"
+                            control={control}
+                            rules={{ required: 'Please enter a value!' }}
+                            render={({ field: { ref, ...field } }) => (
+                                <TextField
+                                    {...field}
+                                    inputRef={ref}
+                                    id="onCorrectPoint"
+                                    variant="outlined"
+                                    label="Point on correct answer"
+                                    type="number"
+                                    fullWidth
+                                    error={!!errors.onCorrectPoint}
+                                    helperText={errors?.onCorrectPoint?.message}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment>
+                                                <Typography>point</Typography>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
+                            )}
+                        />
+                        <Controller
+                            name="onWrongPoint"
+                            control={control}
+                            rules={{ required: 'Please enter a value!' }}
+                            render={({ field: { ref, ...field } }) => (
+                                <TextField
+                                    {...field}
+                                    inputRef={ref}
+                                    id="onWrongPoint"
+                                    variant="outlined"
+                                    label="Point on wrong answer"
+                                    type="number"
+                                    fullWidth
+                                    error={!!errors.onWrongPoint}
+                                    helperText={errors?.onWrongPoint?.message}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment>
+                                                <Typography>point</Typography>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
+                            )}
+                        />
+
+                        <Controller
+                            name="onNullPoint"
+                            control={control}
+                            rules={{ required: 'Please enter a value!' }}
+                            render={({ field: { ref, ...field } }) => (
+                                <TextField
+                                    {...field}
+                                    inputRef={ref}
+                                    id="onNullPoint"
+                                    variant="outlined"
+                                    label="Point on empty answer"
+                                    type="number"
+                                    fullWidth
+                                    error={!!errors.onNullPoint}
+                                    helperText={errors?.onNullPoint?.message}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment>
+                                                <Typography>point</Typography>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
+                            )}
+                        />
+                    </Stack>
+
+                </Grid>
+
+                <Grid item key={'form-submit'} xs={12} sm={12} md={12} display={'flex'} justifyContent={'flex-end'} gap={2}>
+                    <LoadingButton type='button'
+                        onClick={onCancel}
+                        loading={isLoading}
+                        color={'error'}
+                    >
+                        Cancel
+                    </LoadingButton>
+
+                    <LoadingButton type='submit'
+
+                        loading={isLoading}
+                        variant="contained"
+                    >
+                        {variant}
+                    </LoadingButton>
+                </Grid>
             </Grid>
         </Box>
     )
+}
+
+CbtEditor.propTypes = {
+    data: PropTypes.object,
+    onSave: PropTypes.func,
+    isLoading: PropTypes.bool,
+    onCancel: PropTypes.func,
+    variant: PropTypes.oneOf(['update', 'new'])
 }
 
 export default CbtEditor

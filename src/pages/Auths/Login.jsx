@@ -54,7 +54,7 @@ export default function Login() {
             setFocus('identifier')
             setError('main', {
                 type: 'wrongCredentials',
-                message: error.data.message
+                message: error?.data?.message
             })
         }
 
