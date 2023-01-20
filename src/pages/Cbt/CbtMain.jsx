@@ -6,7 +6,7 @@ import useFormatDate from '../../components/hooks/useFormatDate'
 import Spinner from '../../components/Spinner'
 import { useCreateeCbtMutation, useGetCbtsQuery } from '../../features/cbts/cbtSlice'
 
-import CbtCard from '../../components/cbt/CbtCard'
+import CbtCard from '../../components/Cbt/CbtCard'
 import { Add } from '@mui/icons-material'
 import CbtEditor from './CbtEditor'
 import GridCell from '../../components/Tables/GridCell'

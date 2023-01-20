@@ -7,12 +7,19 @@ import MenuAction from '../../Menu/MenuAction'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
+import { useNavigate } from 'react-router-dom'
+import { destroyCredentials } from '../../../features/auth/authSlice'
+import { useDispatch } from 'react-redux'
+import { useCookies } from 'react-cookie'
 
 const NavBarMain = props => {
     const { username, userAvatarUrl, onDrawerToogle, drawerWidth, title } = props
     const nameInitial = username.slice(0, 1).toUpperCase()
 
     const [anchorElUser, setAnchorElUser] = useState(null);
+
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
 
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
@@ -21,6 +28,14 @@ const NavBarMain = props => {
     const handleOpenUserMenu = (event) => {
         setAnchorElUser(event.currentTarget);
     };
+    const [cookies, removeCookies] = useCookies(['refreshToken'])
+
+    const handleLogout = () => {
+        console.log(cookies)
+        dispatch(destroyCredentials())
+        removeCookies()
+        navigate('/login', { replace: true })
+    }
 
     return (
         <AppBar
@@ -44,7 +59,7 @@ const NavBarMain = props => {
                 </IconButton>
                 <Box sx={{ flexGrow: 0 }}>
                     <Toolbar>
-                        <Typography variant='h6'>{document.title}</Typography>
+                        <Typography variant='h6'>{ }</Typography>
                     </Toolbar>
                 </Box>
                 <Box sx={{ flexGrow: 1 }}>
@@ -59,7 +74,7 @@ const NavBarMain = props => {
                         tooltip={'Open user setting'}
                         title={'user-setting'}
                     >
-                        <MenuItem >
+                        <MenuItem onClick={() => { navigate('/profile') }}>
                             <ListItemIcon>
                                 <AccountCircleIcon />
                             </ListItemIcon>
@@ -80,7 +95,7 @@ const NavBarMain = props => {
                             <ListItemIcon>
                                 <LogoutIcon />
                             </ListItemIcon>
-                            <ListItemText>
+                            <ListItemText onClick={handleLogout}>
                                 Logout
                             </ListItemText>
                         </MenuItem>

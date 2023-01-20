@@ -19,7 +19,6 @@ const modal = {
 
 const DialogCard = props => {
     const { actionButtons, title, children, open, onClose, ...other } = props
-    console.log({ ...other })
     return (
         <Dialog
             open={open}

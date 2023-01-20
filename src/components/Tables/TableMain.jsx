@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Toolbar } from '@mui/material'
+import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar, Typography } from '@mui/material'
 
 const TableMain = props => {
 
-    const { title, columns, data, page, onPageChange, onRowsPerPageChange, count, rowsPerPage } = props
+    const { title, columns, data, page, onPageChange, onRowsPerPageChange, count, rowsPerPage, onSort, selectedSort, sortDir } = props
+
+
 
     return (
         <Paper sx={{ width: '100%', overflow: 'hidden', boxShadow: 4 }}>
@@ -19,7 +21,21 @@ const TableMain = props => {
                                         align={column?.align ? column.align : 'left'}
                                         style={{ minWidth: column?.minWidth ? column.minWidth : 170 }}
                                     >
-                                        {column.label}
+
+                                        {column?.disableSorting ?
+                                            <Typography>{column.label}</Typography> :
+                                            <TableSortLabel
+                                                active={selectedSort === column.colName}
+                                                direction={selectedSort === column.colName ? sortDir.toLowerCase() : 'desc'}
+                                                onClick={() => {
+                                                    onSort(column.colName)
+                                                }}
+                                            >
+                                                {column.label}
+                                            </TableSortLabel>
+                                        }
+
+
                                     </TableCell>
                                 ))}
                         </TableRow>
@@ -75,7 +91,14 @@ TableMain.propTypes = {
     onPageChange: PropTypes.func,
     onRowsPerPageChange: PropTypes.func,
     count: PropTypes.number,
-    rowsPerPage: PropTypes.number
+    rowsPerPage: PropTypes.number,
+    onSort: PropTypes.func,
+    selectedSort: PropTypes.string,
+    sortDir: PropTypes.string
+}
+
+TableMain.defaultProps = {
+    onSort: (col) => { }
 }
 
 export default TableMain

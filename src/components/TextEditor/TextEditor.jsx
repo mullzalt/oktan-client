@@ -1,18 +1,21 @@
-import React, { Component, useRef, useState } from 'react';
+import React, { Component, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
-import { EditorState, RichUtils, getDefaultKeyBinding, Modifier, Editor, CompositeDecorator } from 'draft-js';
+import { EditorState, RichUtils, getDefaultKeyBinding, Modifier, Editor, CompositeDecorator, convertToRaw, ContentState } from 'draft-js';
 import { convertToHTML } from 'draft-convert';
 import 'draft-js/dist/Draft.css';
 
-import { Button, ButtonGroup, Card, Menu, MenuItem, Paper, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
+import { Button, ButtonGroup, Card, Collapse, colors, Divider, Menu, MenuItem, Paper, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 
-import { FormatAlignCenter, FormatAlignJustify, FormatAlignLeft, FormatAlignRight, FormatBold, FormatItalic, FormatStrikethrough, FormatUnderlined } from '@mui/icons-material';
+import { FormatAlignCenter, FormatAlignJustify, FormatAlignLeft, FormatAlignRight, FormatBold, FormatItalic, FormatStrikethrough, FormatUnderlined, Subscript, Superscript } from '@mui/icons-material';
 import { Box, Stack } from '@mui/system';
-import { grey } from '@mui/material/colors';
+import { blue, blueGrey, grey } from '@mui/material/colors';
 
 import LinkIcon from '@mui/icons-material/Link'
-import { createLinkDecorator, onAddLink } from './linkHandler';
+import LinkButton from './handler/LinkButton';
+import { linkDecorator, onAddLink } from './handler/linkHandler';
+import draftToHtml from 'draftjs-to-html';
+import htmlToDraft from 'html-to-draftjs';
 
 
 var INLINE_STYLES = [
@@ -20,6 +23,8 @@ var INLINE_STYLES = [
     { label: 'Italic', style: 'ITALIC', icon: <FormatItalic /> },
     { label: 'Underline', style: 'UNDERLINE', icon: <FormatUnderlined /> },
     { label: 'Striketrough', style: 'STRIKETHROUGH', icon: <FormatStrikethrough /> },
+    { label: 'Superscript', style: 'SUPERSCRIPT', icon: <Superscript /> },
+    { label: 'Subscript', style: 'SUBSCRIPT', icon: <Subscript /> },
 ];
 
 var BLOCK_TYPE = [
@@ -37,12 +42,11 @@ var BLOCK_TYPE = [
 
 
 const InlineStyleControls = props => {
-    const { editorState, onChange } = props
+    const { editorState, onChange, value } = props
     const currentStyle = editorState.getCurrentInlineStyle()
     return (
         <>
             <ToggleButtonGroup
-                size='small'
                 aria-label="inline-styles"
             >
                 {
@@ -108,78 +112,37 @@ const BlockTypeControl = props => {
     )
 }
 
-const LinkControl = prop => {
-    const [anchorEl, setAnchorEl] = useState(null)
-    const open = Boolean(anchorEl)
 
-    const handleOpen = (e) => {
-        setAnchorEl(e.currentTarget)
+const customStyleMap = {
+    SUPERSCRIPT: {
+        fontSize: '.83em',
+        veritcalAlign: 'sup'
     }
-
-    const handleClose = () => {
-        setAnchorEl(null)
-    }
-
-    return (
-        <div>
-            <ToggleButton
-                onMouseDown={handleOpen}
-            >
-                <LinkIcon
-                />
-            </ToggleButton>
-
-            <Menu
-                id="demo-positioned-menu"
-                aria-labelledby="demo-positioned-button"
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-            >
-                <Box
-                    sx={{
-                        py: 1,
-                        px: 2,
-                        display: 'flex',
-                        gap: 2,
-                        flexWrap: 'wrap'
-                    }}
-                >
-                    <TextField
-                        size='small'
-                        label='Link Url'
-                    />
-                    <Button
-                        variant='contained'
-                        size='small'
-                    >
-                        Attach Link
-                    </Button>
-                </Box>
-            </Menu>
-
-
-        </div>
-    )
 }
-
-const linkDecorator = createLinkDecorator()
-
 
 const TextEditor = props => {
     const { onChange, value, placeholder, hideToolbar, readOnly } = props
 
+    const blocksFromHtml = htmlToDraft(value);
+    const { contentBlocks, entityMap } = blocksFromHtml;
+    const contentState = ContentState.createFromBlockArray(contentBlocks, entityMap);
+
+
     const [editorState, setEditorState] = useState(
-        () => EditorState.createEmpty(),
+        () => EditorState.createWithContent(contentState),
     );
     const [isFocus, setFocus] = useState(false)
 
+
+    useEffect(() => {
+        const htmlPuri = draftToHtml(
+            convertToRaw(editorState.getCurrentContent())
+        );
+        onChange(htmlPuri)
+    }, [editorState])
+
     const handleChange = (newEditorState) => {
         setEditorState(newEditorState)
-
-        onChange(convertToHTML(editorState.getCurrentContent()))
     }
 
     const editorRef = useRef()
@@ -231,23 +194,34 @@ const TextEditor = props => {
 
     const handleInlineStyling = (e, value) => {
         e.preventDefault()
-        console.log(value)
 
-        handleChange(
-            RichUtils.toggleInlineStyle(
-                editorState,
-                value
+        let newState = RichUtils.toggleInlineStyle(editorState, value)
+        if (value === 'SUPERSCRIPT' || value === 'SUBSCRIPT') {
+            const removeStyle = value === 'SUPERSCRIPT' ? 'SUBSCRIPT' : 'SUPERSCRIPT'
+            const contentState = Modifier.removeInlineStyle(
+                newState.getCurrentContent(),
+                newState.getSelection(),
+                removeStyle
             )
-        )
-    }
+            newState = EditorState.push(
+                newState,
+                contentState,
+                'change-inline-style'
+            )
+        }
 
-    const handleLink = () => {
-        onAddLink(editorState, setEditorState)
+        if (newState) {
+            handleChange(newState)
+        }
+
+
+
+
+
     }
 
     const handleBlockType = (e, value) => {
         e.preventDefault()
-        console.log(value)
         handleChange(
             RichUtils.toggleBlockType(
                 editorState,
@@ -256,61 +230,128 @@ const TextEditor = props => {
         )
     }
 
+    const handleRemoveLink = () => {
+        const selection = editorState.getSelection()
+        handleChange(RichUtils.toggleLink(editorState, selection, null))
 
+    }
 
+    const handleLink = (url, displayText) => {
+        const decorator = linkDecorator()
 
+        let hyperLink = url
+        if (!url.includes('http://')) {
+            if (!url.includes('https://')) {
+                hyperLink = `http://${url}`
+            }
+        }
+
+        const currentContent = editorState.getCurrentContent()
+
+        currentContent.createEntity('LINK', 'MUTABLE', {
+            url: hyperLink
+        })
+
+        const entityKey = currentContent.getLastCreatedEntityKey()
+
+        const selection = editorState.getSelection()
+
+        const textWithEntity = Modifier.replaceText(
+            currentContent,
+            selection,
+            displayText,
+            editorState.getCurrentInlineStyle(),
+            entityKey,
+        )
+
+        const newEntityKey = textWithEntity.getLastCreatedEntityKey()
+
+        let newState = EditorState.createWithContent(textWithEntity, decorator)
+
+        newState = RichUtils.toggleLink(newState, newState.getSelection(), newEntityKey)
+
+        setEditorState(newState)
+    }
 
     return (
         <Box sx={{
             px: 2,
-            py: 4
+            overflow: 'auto'
         }}>
             <Stack gap={2}>
-                <Box sx={{
-                    display: hideToolbar ? 'none' : 'flex',
-                    gap: 2,
-                    flexWrap: 'wrap',
-                    justifyContent: 'start',
-                    border: 1,
-                    borderColor: grey[200],
-                    py: 2,
-                    px: 1
 
-                }}>
-                    <InlineStyleControls
-                        editorState={editorState}
-                        onChange={handleInlineStyling}
-                    />
-                    <BlockTypeControl
-                        editorState={editorState}
-                        onChange={handleBlockType}
-                    />
-
-                    <LinkControl />
-
-
-                </Box>
-
-                <Card sx={{
-                    px: 2,
-                    py: 4,
-                    border: readOnly ? 0 : 1,
-                    borderColor: isFocus ? grey[300] : grey[200],
-                    boxShadow: isFocus ? 2 : 0
-                }}>
+                <Box overflow={'auto'}>
                     <Editor
                         ref={editorRef}
                         editorState={editorState}
                         onEditorStateChange={setEditorState}
                         onChange={handleChange}
-                        onTab={handleTab}
                         handleKeyCommand={handleKeyCommand}
                         onFocus={handleFocus}
                         onBlur={handleBlur}
                         readOnly={readOnly}
                         placeholder={placeholder}
+                        onTab={handleTab}
+                        customStyleMap={{
+                            SUPERSCRIPT: {
+                                fontSize: '.83em',
+                                verticalAlign: 'super'
+                            },
+                            SUBSCRIPT: {
+                                fontSize: '.83em',
+                                verticalAlign: 'sub'
+                            }
+                        }}
                     />
-                </Card>
+
+                    {!readOnly &&
+                        <Box sx={{
+                            w: 1,
+                            display: 'flex',
+                            justifyContent: 'center',
+                        }}>
+                            <Box
+                                sx={{
+                                    width: 1,
+                                    height: isFocus ? '2px' : '1px',
+                                    backgroundColor: isFocus ? blue['400'] : blue['200'],
+                                    borderRadius: 4
+                                }}
+                            />
+                        </Box>
+                    }
+
+                </Box>
+
+
+                {!readOnly &&
+                    <Collapse in={isFocus}>
+                        <Box sx={{
+                            display: 'flex',
+                            gap: 2,
+                            flexWrap: 'wrap',
+                            justifyContent: 'start',
+                            px: 1,
+                            mb: 2,
+                        }}>
+                            <InlineStyleControls
+                                editorState={editorState}
+                                onChange={handleInlineStyling}
+                            />
+                            <LinkButton
+                                editorState={editorState}
+                                onInsert={handleLink}
+                                onRemoveLink={handleRemoveLink}
+                            />
+
+
+                        </Box>
+
+                    </Collapse>
+
+
+                }
+
             </Stack>
 
 
@@ -325,13 +366,16 @@ TextEditor.propTypes = {
     value: PropTypes.string,
     placeholder: PropTypes.string,
     hideToolbar: PropTypes.bool,
-    readOnly: PropTypes.bool
+    readOnly: PropTypes.bool,
 }
 
 TextEditor.defaultProps = {
-    placeholder: 'Type something...',
+    placeholder: '',
     hideToolbar: false,
-    readOnly: false
+    readOnly: false,
+    onChange: (e) => { },
+    value: ''
+
 }
 
 

@@ -8,12 +8,11 @@ import { convertToHTML } from "draft-convert";
 import draftToHtmlPuri from "draftjs-to-html";
 
 import './rte.css'
-import { onAddLink } from "./linkHandler";
 import htmlToDraft from "html-to-draftjs";
 
 
 const toolbarOptions = {
-    options: ["inline", "textAlign", "fontSize", "link", "emoji", "colorPicker", 'remove', 'history'],
+    options: ["inline", "textAlign", "fontSize", "link", "colorPicker", 'remove', 'history'],
     inline: {
         options: ["bold", "italic", "underline", "strikethrough", 'monospace', 'superscript', 'subscript'],
     },

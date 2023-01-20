@@ -20,6 +20,8 @@ import { useGetCbtByIdQuery, useUpdateCbtCoverMutation, useUpdateCbtMutation } f
 import { LoadingButton } from '@mui/lab';
 import CbtQuestion from './CbtQuestion';
 import useQuery from '../../components/hooks/useQuery';
+import CbtQuestionPanel from './CbtQuestionPanel';
+import CbtPreview from './CbtPreview';
 
 
 const tabList = [
@@ -27,7 +29,7 @@ const tabList = [
     { label: 'Cover', icon: <Photo /> },
     { label: 'Question', icon: <LibraryBooksIcon /> },
     { label: 'Members', icon: <GroupIcon /> },
-    { label: 'Live Testing', icon: <AirplayIcon /> }
+    { label: 'Preview', icon: <AirplayIcon /> }
 ]
 
 const queryParam = {
@@ -76,13 +78,6 @@ const CbtPanel = () => {
             isSuccess: isUpdateSuccess
         }] = useUpdateCbtMutation()
 
-    const [uploadCover,
-        { isLoading: isCoverUpdate,
-            isError: isCoverError,
-            error: coverError,
-            isSuccess: isCoverSuccess
-        }] = useUpdateCbtCoverMutation()
-
     useEffect(() => {
         if (isUpdating) {
             toast.loading('Updating cbt data...', {
@@ -94,7 +89,7 @@ const CbtPanel = () => {
         if (isUpdateError) {
             setTimeout(() => {
                 toast.update('UPDATE TOAST', {
-                    render: updateError.data.message,
+                    render: `Update error: ${updateError.data?.message}`,
                     type: toast.TYPE.ERROR,
                     autoClose: 2000,
                     closeButton: true,
@@ -120,43 +115,6 @@ const CbtPanel = () => {
         return () => clearTimeout()
     }, [isUpdateSuccess, isUpdateError, isUpdating])
 
-    useEffect(() => {
-        if (isCoverUpdate) {
-            toast.loading('Uploading image...', {
-                toastId: 'UPLOAD_TOAST'
-            })
-            setLoading(true)
-        }
-
-        if (isCoverError) {
-            setTimeout(() => {
-                toast.update('UPLOAD_TOAST', {
-                    render: coverError.data.message,
-                    type: toast.TYPE.ERROR,
-                    autoClose: 2000,
-                    closeButton: true,
-                    isLoading: false
-                })
-                setLoading(false)
-            }, 1000)
-        }
-
-        if (isCoverSuccess) {
-            refetch()
-            setTimeout(() => {
-                toast.update('UPLOAD_TOAST', {
-                    render: 'Upload success',
-                    type: toast.TYPE.SUCCESS,
-                    autoClose: 2000,
-                    closeButton: true,
-                    isLoading: false
-                })
-                setLoading(false)
-            }, 1000)
-        }
-        return () => clearTimeout()
-    }, [isCoverSuccess, isCoverError, isCoverUpdate])
-
     const handleTabs = (event, index) => {
         navigate(`?component=${queryParam[index]}`)
         setTabIndex(index)
@@ -174,7 +132,7 @@ const CbtPanel = () => {
         const formData = new FormData
         formData.append('file', file, 'cbt_cover.png')
 
-        await uploadCover({ body: formData, id: id })
+        await update({ body: formData, id: id })
     }
 
     const handleRemoveImage = async () => {
@@ -210,11 +168,16 @@ const CbtPanel = () => {
                     </TabPanel>
 
                     <TabPanel value={tabIndex} index={2}>
-                        <CbtQuestion />
+                        {/* <CbtQuestion id={data.id} optionCount={data.optionCount} /> */}
+                        <CbtQuestionPanel cbtId={data.id} optionCount={data.optionCount} />
                     </TabPanel>
 
                     <TabPanel value={tabIndex} index={3}>
                         Live Testing
+                    </TabPanel>
+
+                    <TabPanel value={tabIndex} index={4}>
+                        <CbtPreview cbtId={data.id} />
                     </TabPanel>
                 </Box>
             }

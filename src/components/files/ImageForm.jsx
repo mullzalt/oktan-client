@@ -37,7 +37,7 @@ const DeleteDialog = props => {
 }
 
 const ImageForm = props => {
-    const { title, src, onFileChange, onDelete, tooltip, variant, onSrcChange } = props
+    const { title, src, onFileChange, onDelete, tooltip, variant, onSrcChange, maxHeight } = props
     const [open, setOpen] = useState(false)
     const [openDialog, setOpenDialog] = useState(false)
     const [imageSrc, setImageSrc] = useState(src)
@@ -121,7 +121,7 @@ const ImageForm = props => {
                             component={'img'}
                             src={image}
                             sx={{
-                                maxHeight: 460,
+                                maxHeight: maxHeight || 460,
                                 padding: "1em 1em 0 1em",
                                 objectFit: "contain",
                             }}

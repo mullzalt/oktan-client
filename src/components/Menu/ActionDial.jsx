@@ -16,7 +16,7 @@ const actions = [
     { icon: <ShareIcon />, name: 'Share' },
 ];
 
-export default function SpeedDialTooltipOpen() {
+export default function ActionDial() {
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);

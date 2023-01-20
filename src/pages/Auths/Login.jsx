@@ -60,7 +60,7 @@ export default function Login() {
 
         if (isSuccess) {
             dispatch(setCredentials({ ...data }))
-            navigate('/dashboard')
+            navigate('/dashboard', { replace: true })
         }
     }, [isSuccess, isError, setFocus])
 

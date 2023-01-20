@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 
-import { Button, Card, CardContent, CardHeader, Checkbox, FormControlLabel, Grid, IconButton, Paper, Radio, Stack, Tooltip, Typography } from '@mui/material'
-import { Edit, EditOff } from '@mui/icons-material'
+import { Button, Card, CardContent, CardHeader, Checkbox, Divider, Fab, FormControlLabel, Grid, IconButton, ListItemIcon, ListItemText, MenuItem, Paper, Radio, Stack, Tooltip, Typography } from '@mui/material'
+import { Add, Delete, Edit, EditOff } from '@mui/icons-material'
 import { Box } from '@mui/system'
 import TextEditor from '../../components/TextEditor/TextEditor'
 import DialogCard from '../../components/Cards/DialogCard'
@@ -12,25 +12,27 @@ import moment, { now } from 'moment'
 
 import { Controller, useFieldArray, useForm } from 'react-hook-form'
 
-import { useGetQuery, useLazyGetQuery } from '../../features/generalSlice'
+import { useDeleteMutation, useGetQuery, useLazyGetQuery, usePostMutation } from '../../features/generalSlice'
 import ImageForm from '../../components/Files/ImageForm'
 import RTE from '../../components/TextEditor/RTE'
+import MenuAction from '../../components/Menu/MenuAction'
+import { toast } from 'react-toastify'
 
 const QuestionInputForm = props => {
-    const { data, onChange, title, ...other } = props
+    const { data, onChange, title, textAttribute = 'text', placeholder, id, ...other } = props
 
     const initialState = {
-        text: '',
+        [textAttribute]: '',
         imgUrl: '',
         file: ''
     }
 
-
     const [hideToolbar, sethideToolbar] = useState(true)
+    const [itemId, setItemId] = useState(data?.id || false)
     const [hide, setHide] = useState(true)
     const [file, setFile] = useState()
     const [src, setSrc] = useState(data?.imgUrl || null)
-    const [text, setText] = useState(data?.text || null)
+    const [text, setText] = useState(data?.[textAttribute] || null)
     const [form, setForm] = useState(initialState)
 
     useEffect(() => {
@@ -65,7 +67,7 @@ const QuestionInputForm = props => {
         setText(data)
         setForm(prev => ({
             ...prev,
-            text: data
+            [textAttribute]: data
         }))
     }
 
@@ -93,7 +95,6 @@ const QuestionInputForm = props => {
                     </Box>
                     <Card>
                         <CardHeader
-                            subheader={'Insert text'}
                             action={
                                 <Tooltip title={'Show toolbar'}>
                                     <IconButton onMouseDown={(e) => {
@@ -112,14 +113,14 @@ const QuestionInputForm = props => {
 
                         </CardHeader>
                         <Box sx={{
-                            border: 1,
-                            borderColor: grey[700],
+                            px: 1,
+                            borderColor: grey[500],
                         }}>
                             <RTE
                                 onChange={hadleText}
                                 hideToolbar={hideToolbar}
                                 value={text}
-                                placeholder={'write something...'}
+                                placeholder={placeholder}
                             />
                         </Box>
 
@@ -138,11 +139,17 @@ QuestionInputForm.defaultProps = {
 
 
 const QuestionForm = props => {
-    const { data, onSubmit } = props
-    const optionCount = 5
+    const { data, onSubmit, onCancel, optionCount } = props
+    const initialQuestion = {
+        question: data?.question || '',
+        file: '',
+        imgUrl: data?.imgUrl || '',
+    }
 
-    const initialValue = {
-        text: '',
+
+
+    const initialOption = {
+        option: '',
         file: '',
         imgUrl: '',
         isAnswer: false
@@ -150,17 +157,28 @@ const QuestionForm = props => {
 
     const initialOptions = () => {
         let option = []
-        for (let i = 0; i < optionCount; i++) {
-            option.push(initialValue)
+
+
+        if (data?.options) {
+            console.log(data.options)
+            data.options.map(op => {
+                option.push(op)
+            })
+        } else {
+            for (let i = 0; i < optionCount; i++) {
+                option.push(initialOption)
+            }
         }
 
         return option
     }
 
+    console.log(initialQuestion)
+    console.log(initialOption)
 
     const { control, register, handleSubmit, setValue } = useForm({
         defaultValues: {
-            question: initialValue,
+            question: initialQuestion,
             options: initialOptions()
         },
         mode: 'onChange'
@@ -177,6 +195,7 @@ const QuestionForm = props => {
                 sx={{
                     border: 1,
                     borderColor: grey[400],
+                    borderRadius: 2,
                     p: 2
                 }}
             >
@@ -187,7 +206,9 @@ const QuestionForm = props => {
                     render={({ field: { onChange, onBlur, value, ref } }) => (
                         <QuestionInputForm
                             onChange={onChange}
-                            ref={ref}
+                            data={value}
+                            textAttribute={'question'}
+                            placeholder={'Write question...'}
                         />
                     )}
                 />
@@ -200,6 +221,7 @@ const QuestionForm = props => {
                             sx={{
                                 border: 1,
                                 borderColor: grey[400],
+                                borderRadius: 4,
                                 p: 2
                             }}
                         >
@@ -210,7 +232,9 @@ const QuestionForm = props => {
                                 render={({ field: { onChange, onBlur, value, ref } }) => (
                                     <QuestionInputForm
                                         onChange={onChange}
-                                        ref={ref}
+                                        data={value}
+                                        textAttribute={'option'}
+                                        placeholder={'Write option...'}
                                     />
                                 )}
                             />
@@ -238,100 +262,340 @@ const QuestionForm = props => {
                 })
             }
 
-            <Button type="submit">
-                Save
-            </Button>
+            <Box sx={{ display: 'flex', width: 1, justifyContent: 'flex-end', gap: 4 }}>
+                <Button type="button" color='error' onClick={onCancel}>
+                    Cancel
+                </Button>
+                <Button type="submit">
+                    Save
+                </Button>
+
+            </Box>
+
+
 
 
         </Stack>
     )
 }
 
+QuestionForm.propTypes = {
+    onSubmit: PropTypes.func,
+    data: PropTypes.object,
+    onCancel: PropTypes.func,
+    optionCount: PropTypes.number,
+}
 
+QuestionForm.defaultProps = {
+    optionCount: 5
+}
 
-const CbtQuestion = props => {
-    const { id } = useParams()
+const QuestionContainer = props => {
+    const { id, question, options, imgSrc, index, onEdit, onDelete, data } = props
 
-    const [openDialog, setOpenDialog] = useState(false)
-    const [formData, setFormData] = useState(null)
-
-    const { id: cbtId } = useParams()
-
-
-    const { data, isLoading, isSuccess } = useGetQuery({
-        url: `cbts/${id}/questions`
-    })
-
-    // const [post, { isLoading, isSuccess, isError }] = useGeneralPostMutation()
-
-    const handleFormChange = (newData) => {
-        setFormData(newData)
+    const handleEdit = () => {
+        onEdit(data)
     }
 
-    // const handleSave = async () => {
-    //     const body = new FormData()
-
-    //     body.append('question', formData['text'])
-    //     body.append('file', formData['file'], 'QuestionImage.png')
-    //     body.append('imgUrl', formData['imgUrl'])
-    //     body.append('destination', `cbt/${cbtId}`)
-    //     body.append('cbtId', cbtId)
-    //     body.append('filename', moment().format('[QUESTION]YYYY_MM_DD_hh_mm_ss_SSS'))
-
-    //     console.log(body)
-
-    //     const { id } = await post({ model: 'CbtQuestion', body: body }).unwrap()
-
-    //     alert(id)
-    //     setOpenDialog(false)
-    // }
+    const handleDelete = () => {
+        onDelete(id)
+    }
 
     return (
         <React.Fragment>
-            <Button onClick={(e) => {
-                setOpenDialog(true)
+            <Paper sx={{
+                p: 2,
+                boxShadow: 2,
+                border: 2,
+                borderColor: grey[500],
+
+                borderRadius: 4
             }}>
-                OK
-            </Button>
+                <Stack gap={3}>
+                    <Box sx={{ display: 'flex', width: 1, justifyContent: 'flex-end' }}>
+                        <MenuAction tooltip={'Open question menu'}>
+                            <MenuItem key={`${index}-edit`} onClick={handleEdit}>
+                                <ListItemIcon>
+                                    <Edit />
+                                </ListItemIcon>
+                                <Typography variant='inherit' noWrap>
+                                    {`Edit`}
+                                </Typography>
+                            </MenuItem>
+                            <Divider />
+
+                            <MenuItem key={`${index}-delete`} onClick={handleDelete}>
+                                <ListItemIcon >
+                                    <Delete />
+                                </ListItemIcon>
+                                <ListItemText>
+                                    Delete
+                                </ListItemText>
+                            </MenuItem>
+                        </MenuAction>
+                    </Box>
+
+
+
+                    <Box>
+                        {
+                            imgSrc &&
+                            <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
+                                <Box
+                                    component={'img'}
+                                    sx={{
+                                        width: 1,
+                                        maxHeight: 400,
+                                        alignSelf: 'center',
+                                        objectFit: 'contain',
+                                        border: 1,
+                                        borderColor: grey['300']
+                                    }}
+                                    alt="Question"
+                                    src={imgSrc}
+                                />
+                            </Box>
+
+                        }
+                        <RTE hideToolbar={true}
+                            value={question}
+                            readOnly />
+                    </Box>
+
+                    <Divider />
+
+                    {options && options.map(option => {
+                        return (
+                            <Box sx={{ px: 2, border: 1, borderColor: grey[400], borderRadius: 4, mx: 4 }}>
+                                {option.imgUrl &&
+                                    <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
+                                        <Box
+                                            component={'img'}
+                                            sx={{
+                                                width: 1,
+                                                maxHeight: 350,
+                                                alignSelf: 'center',
+                                                objectFit: 'contain',
+                                                border: 1,
+                                                borderColor: grey['300']
+                                            }}
+                                            alt="option"
+                                            src={option.imgUrl}
+                                        />
+                                    </Box>
+                                }
+                                <RTE hideToolbar={true}
+                                    value={option.option}
+                                    readOnly />
+                            </Box>
+                        )
+                    })}
+
+
+                </Stack>
+
+            </Paper>
+        </React.Fragment>
+    )
+}
+
+QuestionContainer.propTypes = {
+    id: PropTypes.any,
+    question: PropTypes.string,
+    index: PropTypes.number,
+    imgSrc: PropTypes.string,
+    options: PropTypes.arrayOf(PropTypes.object),
+    onEdit: PropTypes.func,
+    onDelete: PropTypes.func
+}
+
+
+
+const CbtQuestion = props => {
+
+    const { id, optionCount } = props
+
+    const [openDialog, setOpenDialog] = useState(false)
+    const [openUpdateDialog, setUpdateDialog] = useState(false)
+    const [updateData, setUpdateData] = useState(null)
+
+    const [loading, setLoading] = useState(false)
+    const [success, setSuccess] = useState(false)
+    const [error, setError] = useState(false)
+    const [message, setMessage] = useState('')
+
+
+
+    const { data, isLoading, isSuccess, refetch, isFetching } = useGetQuery({
+        url: `cbts/${id}/questions`
+    })
+
+    const [post, { isLoading: postLoading, isSuccess: postSuccess, isError: postError }] = usePostMutation()
+    const [deleteQuesion, { isLoading: deleteLoading, isSuccess: deleteSuccess, isError: deleteError }] = useDeleteMutation()
+
+    useEffect(() => {
+        if (loading) {
+            toast.loading(message, {
+                toastId: 'POST TOAST'
+            })
+            setLoading(true)
+        }
+
+        if (error) {
+            toast.update('POST TOAST', {
+                render: message,
+                type: toast.TYPE.ERROR,
+                autoClose: 2000,
+                closeButton: true,
+                isLoading: false
+            })
+        }
+
+        if (success) {
+            toast.update('POST TOAST', {
+                render: message,
+                type: toast.TYPE.SUCCESS,
+                autoClose: 2000,
+                closeButton: true,
+                isLoading: false
+            })
+            setOpenDialog(false)
+            refetch()
+        }
+    }, [loading, error, success])
+
+
+    const handleNewQuestion = () => {
+        setOpenDialog(true)
+    }
+
+    const handlePost = async (data) => {
+        setLoading(true)
+        setMessage('Creating question...')
+        try {
+            const form = new FormData()
+
+            const question = data?.question
+            for (var key in question) {
+                form.append(key, question[key])
+            }
+
+            const questionData = await post({ url: `cbts/${id}/questions`, body: form }).unwrap()
+
+            const questionId = questionData.id
+
+            data.options.map(async (option) => {
+                const optionForm = new FormData()
+                for (var key in option) {
+                    optionForm.append(key, option[key])
+                }
+
+
+                await post({ url: `cbts/${id}/questions/${questionId}/options`, body: optionForm }).unwrap()
+            })
+
+            setMessage('Question Created')
+            setLoading(false)
+            setSuccess(true)
+        } catch (error) {
+            setLoading(false)
+            setError(true)
+            setMessage(error.message)
+        }
+
+    }
+
+    const hadleDelete = async (questionId) => {
+        await deleteQuesion({ url: `cbts/${id}/questions/${questionId}` })
+
+        refetch()
+    }
+
+    const handleEdit = (data) => {
+        setUpdateData(data)
+        setUpdateDialog(true)
+    }
+
+    return (
+        <React.Fragment>
 
             <DialogCard
                 aria-labelledby="cbt-quesion-1"
                 aria-describedby="cbt-quesion-1"
                 open={openDialog}
-                onClose={(e) => {
-                    setOpenDialog(false)
-                }}
                 maxWidth={'lg'}
                 title={'Insert new Question'}
                 fullWidth
-                actionButtons={
-                    <>
-                        {/* <Button color='error' onClick={(e) => {
-                            setOpenDialog(false)
-                        }}>Cancel</Button>
-                        <Button onClick={handleSave}>Save</Button> */}
-                    </>
-                }
             >
-                <QuestionInputForm
-
+                <QuestionForm
+                    onCancel={() => setOpenDialog(false)}
+                    onSubmit={handlePost}
+                    optionCount={optionCount}
                 />
 
             </DialogCard>
 
+            <DialogCard
+                aria-labelledby="cbt-quesion-1"
+                aria-describedby="cbt-quesion-1"
+                open={openUpdateDialog}
+                onClose={() => { setUpdateDialog(false) }}
+                maxWidth={'lg'}
+                title={'Update Question'}
+                fullWidth
+            >
+                <QuestionForm
+                    onCancel={() => setUpdateDialog(false)}
+                    onSubmit={(data) => console.log(data)}
+                    optionCount={optionCount}
+                    data={updateData}
+                />
 
-            <QuestionForm
-                onSubmit={(data) => {
-                    console.log(data)
-                }}
-            />
+            </DialogCard>
+
+            <Stack gap={6}>
+                {
+                    data &&
+                    data.rows.map((row, index) => {
+                        return (
+                            <QuestionContainer
+                                id={row.id}
+                                question={row.question}
+                                options={row.options}
+                                imgSrc={row.imgUrl}
+                                index={index}
+                                key={row.id}
+                                onDelete={hadleDelete}
+                                onEdit={handleEdit}
+                                data={row}
+                            />
+                        )
+                    })
+                }
+            </Stack>
+
+
+
+            <Box sx={{ height: 330, transform: 'translateZ(0px)', flexGrow: 1, position: 'fixed', bottom: 16, right: 16 }}>
+                <Tooltip title={'Crete new question'}>
+                    <Fab color="primary" aria-label="add" sx={{ position: 'absolute', bottom: 16, right: 16 }}
+                        onClick={handleNewQuestion}
+                    >
+                        <Add />
+                    </Fab>
+                </Tooltip>
+
+            </Box>
+
+
+
 
         </React.Fragment>
     )
 }
 
 CbtQuestion.propTypes = {
-
+    optionCount: PropTypes.number
 }
 
 export default CbtQuestion

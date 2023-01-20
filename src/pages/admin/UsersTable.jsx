@@ -8,7 +8,7 @@ import { useGetUsersQuery } from '../../features/users/userSlice'
 
 
 const column = [
-    { colName: 'userAvatar', label: '', minWidth: 54 },
+    { colName: 'userAvatar', label: '', minWidth: 54, disableSorting: true },
     { colName: 'username', label: 'Username' },
     { colName: 'name', label: 'Name' },
     { colName: 'roles', label: 'Role' },
@@ -21,10 +21,12 @@ const column = [
 const UserTableAdmin = ({ sx }) => {
     const [params, setParams] = useState({
         page: 1,
-        size: 100,
+        size: 25,
         search: '',
         verified: '',
-        role: ''
+        role: '',
+        orderBy: '',
+        sortDir: 'ASC'
     })
 
     const { data, isLoading, refecth, isFetching } = useGetUsersQuery(params)
@@ -44,7 +46,7 @@ const UserTableAdmin = ({ sx }) => {
             newData = [...newData, Object.assign({},
                 { ...row },
                 { ...row?.user_profile },
-                { userAvatar: <Avatar sx={{ width: 24, height: 24 }} src={row?.user_profile?.avatar}></Avatar> })]
+                { userAvatar: <Avatar sx={{ width: 40, height: 40 }} src={row?.user_profile?.avatar}></Avatar> })]
         })
 
         return newData
@@ -64,6 +66,24 @@ const UserTableAdmin = ({ sx }) => {
             ...prev,
             search: e.target.value,
             page: 1
+        }))
+    }
+
+    const handleSorting = (col) => {
+
+        let newDir
+
+        if (params.sortDir === 'ASC') {
+            newDir = 'DESC'
+        }
+        if (params.sortDir === 'DESC') {
+            newDir = 'ASC'
+        }
+
+        setParams(prev => ({
+            ...prev,
+            orderBy: col,
+            sortDir: newDir
         }))
     }
 
@@ -90,13 +110,15 @@ const UserTableAdmin = ({ sx }) => {
 
                     <TableMain
                         page={params.page - 1}
-                        count={data.totalItem}
+                        count={data.totalItems}
                         rowsPerPage={params.size}
                         columns={column}
                         data={formattedData(data)}
                         onPageChange={handlePagChange}
                         onRowsPerPageChange={handleRowsPerPageChange}
-
+                        onSort={handleSorting}
+                        sortDir={params.sortDir}
+                        selectedSort={params.orderBy}
                     />
                 </Stack>
             }
