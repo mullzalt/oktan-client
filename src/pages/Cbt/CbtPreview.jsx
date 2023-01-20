@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
-import { useGetQuery } from '../../features/generalSlice'
+import { useGetQuery, useLazyGetQuery } from '../../features/generalSlice'
 import TestQuestionContainer from './question/TestQuestionContainer'
 import { Button, Divider, Fab, Grid, IconButton, Paper, SwipeableDrawer, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material'
 import { Box, Stack } from '@mui/system'
@@ -24,56 +24,33 @@ const CbtPreview = props => {
     const [answerData, setAnswerData] = useState([])
     const user = useSelector(selectCurrentUser)
 
-    const { data: cbtQuestion } = useGetQuery({ url: `tests/${cbtId}/questions`, params: { size: 999 } })
+    const [getQuestion] = useLazyGetQuery({ url: `users/${user.id}/cbts/${cbtId}/questions`, params: { size: 999 } })
+    const {data: answerDb} = useGetQuery({ url: `users/${user.id}/cbts/${cbtId}/answers`, params: { size: 999 } })
 
     const socket = useRef()
 
     useEffect(() => {
-        if (!localStorage.getItem(cbtId)) {
-            if (cbtQuestion) {
-                localStorage.setItem(cbtId, JSON.stringify(cbtQuestion))
-                const item = JSON.parse(localStorage.getItem(cbtId))
-                setQuestions(item)
+    //     if (!localStorage.getItem(cbtId)) {
+    //         if (cbtQuestion) {
+    //             localStorage.setItem(cbtId, JSON.stringify(cbtQuestion))
+    //             const item = JSON.parse(localStorage.getItem(cbtId))
+    //             setQuestions(item)
 
-            }
-        }
-    }, [cbtQuestion])
-
-    useEffect(() => {
-        if (localStorage.getItem(cbtId)) {
-            socket.current = io(API_URL)
-            socket.current.on('getAnswers', (data) => {
-                const { answers } = data
-                setAnswerData(answers)
-                console.log(data)
-            })
-
-
-            const item = JSON.parse(localStorage.getItem(cbtId))
-            setQuestions(item)
-
-            if (!localStorage.getItem(`${cbtId}-answers`)) {
-                let initialAnswerState = []
-                item.rows.map(q => {
-                    initialAnswerState.push({ questionsId: q.id, optionId: '', isEmpty: true })
-                })
-                setAnswerData(initialAnswerState)
-            }
-            else {
-                const localAnswer = JSON.parse(localStorage.getItem(`${cbtId}-answers`))
-                setAnswerData(localAnswer)
-            }
-
-        }
+    //         }
+    //     }
     }, [])
 
-    useEffect(() => {
+    useEffect(async() => {
 
     }, [answerData])
 
-    useEffect(() => {
+    // useEffect(() => {
 
-    }, [])
+    // }, [answerData])
+
+    // useEffect(() => {
+
+    // }, [])
 
 
 
@@ -92,31 +69,27 @@ const CbtPreview = props => {
     };
 
     const handleAnswer = (data, index) => {
-        let ansDatas = answerData
+        // let ansDatas = answerData
 
-        let ans = { ...data }
+        // let ans = { ...data }
 
-        ansDatas[index] = ans
+        // ansDatas[index] = ans
 
-        localStorage.setItem(`${cbtId}-answers`, JSON.stringify(ansDatas))
-        setAnswerData(ansDatas)
+        // localStorage.setItem(`${cbtId}-answers`, JSON.stringify(ansDatas))
+        // setAnswerData(ansDatas)
 
-        socket.current.emit('updateCbtAnswer', {
-            receiverId: user.id, answers: answerData, senderId: user.id
-        }, (callback) => { })
+        // socket.current.emit('updateCbtAnswer', {
+        //     receiverId: user.id, answers: answerData, senderId: user.id
+        // }, (callback) => { })
 
 
-        socket.current.emit('sendMessage', { receiverId: '123', text: 'asdfasd', senderId: user.id }, (cb) => {
-            console.log(cb)
-        })
+        // socket.current.emit('sendMessage', { receiverId: '123', text: 'asdfasd', senderId: user.id }, (cb) => {
+        //     console.log(cb)
+        // })
     }
 
     return (
         <React.Fragment>
-
-
-
-
             {
                 questions &&
                 <React.Fragment>
