@@ -20,6 +20,7 @@ import { useSelector } from 'react-redux'
 import { selectCurrentUser } from '../../features/auth/authSlice'
 import ConfirmDialog from '../../components/Cards/ConfirmDialog'
 import SearchAppBar from '../../components/Navigation/SearchBar'
+import { useParams } from 'react-router-dom'
 
 
 
@@ -34,7 +35,7 @@ const initialState = {
 
 const CbtEditDialog = props => {
 
-    const { onClose, open, cbtId, questionId, onSuccess } = props
+    const { onClose, open, cbtId, questionId, onSuccess, optionCount } = props
 
     const [state, setState] = useState(initialState)
 
@@ -137,6 +138,7 @@ const CbtEditDialog = props => {
                             onClose()
                         }}
                         data={data}
+                        optionCount={optionCount}
                     />
                 }
 
@@ -149,12 +151,22 @@ const CbtEditDialog = props => {
 
 
 const CbtQuestionPanel = props => {
-    const { cbtId, optionCount } = props
+    // const { cbtId } = props
 
     const [openCreateForm, setOpenCreateForm] = useState(false)
     const [openEditForm, setOpenEditForm] = useState(false)
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false)
     const [questionId, setQuestionId] = useState(null)
+
+
+    const [optionCount, setOptionCount] = useState(null)
+    const [data, setData] = useState({})
+
+    const cbtId = useParams().id
+
+
+
+
     const user = useSelector(selectCurrentUser)
 
     const [state, setState] = useState({
@@ -173,9 +185,26 @@ const CbtQuestionPanel = props => {
         sortDir: 'DESC'
     })
 
-    const { data, isLoading, isSuccess, refetch, isFetching } = useGetQuery({
+
+    const { data: questionData, isLoading, isSuccess, refetch, isFetching } = useGetQuery({
         url: `cbts/${cbtId}/questions`, params: params
     })
+
+    const { data: cbtData, isSuccess: cbtSuccess } = useGetQuery({
+        url: `cbts/${cbtId}`
+    })
+
+
+    useEffect(() => {
+        if (questionData) {
+            setData(questionData)
+        }
+
+        if (cbtData) {
+            const opCount = cbtData?.optionCount
+            setOptionCount(opCount)
+        }
+    }, [questionData, cbtSuccess])
 
     useEffect(() => {
         if (state.loading) {
@@ -281,6 +310,7 @@ const CbtQuestionPanel = props => {
         }
     }
 
+
     const handlePageChange = (e, newPage) => {
         setParams(prev => ({
             ...prev,
@@ -300,7 +330,6 @@ const CbtQuestionPanel = props => {
         <React.Fragment>
 
             <Spinner open={isLoading} />
-
             <Dialog
                 open={openCreateForm}
                 aria-describedby="alert-dialog-slide-description"
@@ -322,6 +351,7 @@ const CbtQuestionPanel = props => {
                         onCancel={() => {
                             setOpenCreateForm(false)
                         }}
+                        optionCount={optionCount}
                     />
                 </DialogContent>
 
@@ -338,6 +368,7 @@ const CbtQuestionPanel = props => {
                         setOpenEditForm(false)
                         refetch()
                     }}
+                    optionCount={optionCount}
                 />
             }
 
@@ -359,7 +390,7 @@ const CbtQuestionPanel = props => {
             </ConfirmDialog>
 
 
-            {data &&
+            {questionData &&
                 <Box sx={{ py: 6 }} >
                     <Box flexGrow={1}>
                         <Stack divider={<Divider />} gap={2} mb={6}>
@@ -374,7 +405,7 @@ const CbtQuestionPanel = props => {
                             />
                             <TablePagination
                                 component="div"
-                                count={data?.totalItems}
+                                count={questionData?.totalItems}
                                 page={params.page - 1}
                                 onPageChange={handlePageChange}
                                 rowsPerPage={params.size}
@@ -390,7 +421,7 @@ const CbtQuestionPanel = props => {
                         <Box maxWidth={'md'} sx={{ w: 1, flexGrow: 1 }}>
                             <Stack gap={6} >
                                 {
-                                    data && data.rows.map(row => {
+                                    questionData && questionData.rows.map(row => {
                                         return (
 
                                             <QuestionContainer key={row.id} data={row} onEdit={handleEdit} onDelete={handleDelete} />
@@ -410,13 +441,6 @@ const CbtQuestionPanel = props => {
 
 
             }
-
-
-
-
-
-
-
 
             <ActionButton tooltip={'Create new Question'} onClick={() => {
                 setOpenCreateForm(true)

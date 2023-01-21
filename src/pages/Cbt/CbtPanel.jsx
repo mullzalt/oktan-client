@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, Outlet, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import LocalLibraryIcon from '@mui/icons-material/LocalLibrary';
 
@@ -13,7 +13,7 @@ import Spinner from '../../components/Spinner';
 import { toast } from 'react-toastify';
 import { Photo } from '@mui/icons-material';
 import ImageForm from '../../components/Files/ImageForm';
-import { Button } from '@mui/material';
+import { Button, Tab, Tabs } from '@mui/material';
 
 
 import { useGetCbtByIdQuery, useUpdateCbtCoverMutation, useUpdateCbtMutation } from '../../features/cbts/cbtSlice';
@@ -24,13 +24,7 @@ import CbtQuestionPanel from './CbtQuestionPanel';
 import CbtPreview from './CbtPreview';
 
 
-const tabList = [
-    { label: 'Cbt', icon: <LocalLibraryIcon /> },
-    { label: 'Cover', icon: <Photo /> },
-    { label: 'Question', icon: <LibraryBooksIcon /> },
-    { label: 'Members', icon: <GroupIcon /> },
-    { label: 'Preview', icon: <AirplayIcon /> }
-]
+
 
 const queryParam = {
     0: 'edit',
@@ -60,7 +54,7 @@ const CbtPanel = () => {
 
     const component = query.get('component') || 'edit'
 
-    const [tabIndex, setTabIndex] = useState(paramValue[component])
+    const [tabIndex, setTabIndex] = useState(0)
 
     const navigate = useNavigate()
 
@@ -116,7 +110,6 @@ const CbtPanel = () => {
     }, [isUpdateSuccess, isUpdateError, isUpdating])
 
     const handleTabs = (event, index) => {
-        navigate(`?component=${queryParam[index]}`)
         setTabIndex(index)
     }
 
@@ -139,6 +132,13 @@ const CbtPanel = () => {
         await update({ id: id, body: { imgUrl: null } })
     }
 
+    const tabList = [
+        { label: 'Cover', icon: <Photo /> },
+        { label: 'Question', icon: <LibraryBooksIcon /> },
+        { label: 'Members', icon: <GroupIcon /> },
+        { label: 'Preview', icon: <AirplayIcon /> }
+    ]
+
 
     return (
         <>
@@ -146,39 +146,39 @@ const CbtPanel = () => {
             {
                 data &&
                 <Box>
-                    <MenuTab tabList={tabList} title={'Cbt-panel'} onMenuChage={handleTabs} currentIndex={tabIndex} />
-                    <TabPanel value={tabIndex} index={0}>
-                        <CbtEditor data={data} onSave={handleUpdateCbt} isLoading={loading} variant={'update'} />
-                    </TabPanel>
 
-                    <TabPanel value={tabIndex} index={1}>
-                        <ImageForm
-                            title={'Cover Image'}
-                            src={data.imgUrl}
-                            onDelete={handleRemoveImage}
-                            onFileChange={handleFile} />
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 5, }}>
-                            <LoadingButton
-                                variant='contained' disabled={!Boolean(file)} onClick={handleUpload}
-                                loading={loading}
-                            >
-                                Upload
-                            </LoadingButton>
-                        </Box>
-                    </TabPanel>
 
-                    <TabPanel value={tabIndex} index={2}>
-                        {/* <CbtQuestion id={data.id} optionCount={data.optionCount} /> */}
-                        <CbtQuestionPanel cbtId={data.id} optionCount={data.optionCount} />
-                    </TabPanel>
+                    <Tabs
+                        onChange={handleTabs}
+                        value={tabIndex}
+                        variant="scrollable"
+                        scrollButtons="auto"
+                        aria-label="cbt tab panel">
+                        <Tab component={Link} icon={<LocalLibraryIcon />} label={'EDIT'} to={'edit'} iconPosition={'start'} key={'edit'} />
+                        <Tab component={Link} icon={<LibraryBooksIcon />} label={'Question'} to={'questions'} iconPosition={'start'} key={'Question'} />
+                        <Tab component={Link} icon={<GroupIcon />} label={'Members'} to={'members'} iconPosition={'start'} key={'Members'} />
+                        <Tab component={Link} icon={<AirplayIcon />} label={'Preview'} to={'preview'} iconPosition={'start'} key={'Preview'} />
+                    </Tabs>
 
-                    <TabPanel value={tabIndex} index={3}>
-                        Live Testing
-                    </TabPanel>
 
-                    <TabPanel value={tabIndex} index={4}>
-                        <CbtPreview cbtId={data.id} />
-                    </TabPanel>
+                    <Outlet />
+
+                    {/* <TabPanel value={tabIndex} index={2}>
+<CbtQuestionPanel cbtId={data.id} optionCount={data.optionCount} />
+</TabPanel>
+
+<TabPanel value={tabIndex} index={3}>
+Live Testing
+</TabPanel>
+
+<TabPanel value={tabIndex} index={4}>
+<CbtPreview cbtId={data.id} />
+</TabPanel> */}
+
+
+
+
+
                 </Box>
             }
         </>
@@ -186,3 +186,4 @@ const CbtPanel = () => {
 }
 
 export default CbtPanel
+

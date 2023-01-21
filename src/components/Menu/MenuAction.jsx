@@ -44,7 +44,7 @@ const MenuList = props => {
 
             anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             sx={{
-                width: 240
+                width: 500
             }}
         >
             {children}
@@ -55,7 +55,7 @@ const MenuList = props => {
 }
 
 const MenuAction = props => {
-    const { title, children, icon, tooltip } = props
+    const { title, children, icon, tooltip, ...sx } = props
 
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
@@ -73,7 +73,7 @@ const MenuAction = props => {
     return (
         <>
             <Tooltip title={tooltip}>
-                <IconButton aria-label={`${title}-setting`} onClick={handleClick}>
+                <IconButton aria-label={`${title}-setting`} onClick={handleClick} {...sx}>
                     {icon ? icon : <MoreVert />}
                 </IconButton>
             </Tooltip>

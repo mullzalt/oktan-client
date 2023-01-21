@@ -11,9 +11,10 @@ import { useNavigate } from 'react-router-dom'
 import { destroyCredentials } from '../../../features/auth/authSlice'
 import { useDispatch } from 'react-redux'
 import { useCookies } from 'react-cookie'
+import NotificationHandler from './NotificatioHandler'
 
 const NavBarMain = props => {
-    const { username, userAvatarUrl, onDrawerToogle, drawerWidth, title } = props
+    const { username, userAvatarUrl, onDrawerToogle, drawerWidth, title, role } = props
     const nameInitial = username.slice(0, 1).toUpperCase()
 
     const [anchorElUser, setAnchorElUser] = useState(null);
@@ -48,6 +49,7 @@ const NavBarMain = props => {
 
         >
             <Toolbar>
+
                 <IconButton
                     color='inherit'
                     aria-label='open-drawer'
@@ -57,6 +59,7 @@ const NavBarMain = props => {
                 >
                     <MenuIcon />
                 </IconButton>
+
                 <Box sx={{ flexGrow: 0 }}>
                     <Toolbar>
                         <Typography variant='h6'>{ }</Typography>
@@ -67,8 +70,8 @@ const NavBarMain = props => {
                 </Box>
 
 
-                <Box sx={{ flexGrow: 0, display: 'flex' }}>
-
+                <Box sx={{ flexGrow: 0, display: 'flex', gap: 2 }}>
+                    <NotificationHandler role={role} />
                     <MenuAction
                         icon={<Avatar alt={username} src={userAvatarUrl}>{nameInitial}</Avatar >}
                         tooltip={'Open user setting'}
@@ -91,11 +94,11 @@ const NavBarMain = props => {
                             </ListItemText>
                         </MenuItem>
                         <Divider />
-                        <MenuItem >
+                        <MenuItem onClick={handleLogout} >
                             <ListItemIcon>
                                 <LogoutIcon />
                             </ListItemIcon>
-                            <ListItemText onClick={handleLogout}>
+                            <ListItemText >
                                 Logout
                             </ListItemText>
                         </MenuItem>
@@ -112,7 +115,8 @@ NavBarMain.propTypes = {
     userAvatarUrl: PropTypes.string,
     onDrawerToogle: PropTypes.func,
     drawerWidth: PropTypes.number,
-    title: PropTypes.string
+    title: PropTypes.string,
+    role: PropTypes.string
 }
 
 export default NavBarMain

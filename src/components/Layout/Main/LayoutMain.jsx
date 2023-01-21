@@ -22,7 +22,7 @@ const LayoutMain = props => {
 
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
-            <NavBarMain username={username} onDrawerToogle={handleDrawerToogle} drawerWidth={drawerWidth} />
+            <NavBarMain username={username} onDrawerToogle={handleDrawerToogle} drawerWidth={drawerWidth} role={user.roles} />
             <Box
                 component={'nav'}
                 sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}

@@ -15,6 +15,8 @@ import Moment from 'react-moment'
 import 'moment/locale/id'
 import MenuTab, { TabPanel } from '../../components/Tabs/MenuTab'
 import { toast } from 'react-toastify'
+import CbtEditorForm from './form/CbtEditorForm'
+import { usePutMutation } from '../../features/generalSlice'
 
 
 const CbtMain = () => {
@@ -35,6 +37,8 @@ const CbtMain = () => {
             error: InsertError,
             isSuccess: isInsertSuccess
         }] = useCreateeCbtMutation()
+
+    const [update, { isSuccess: updateSuccess, isError: updateError, isLoading: updateLoading }] = usePutMutation()
 
     useEffect(() => {
         if (isinserting) {
@@ -74,8 +78,58 @@ const CbtMain = () => {
         return () => clearTimeout()
     }, [isInsertSuccess, isInsertError, isinserting])
 
+    useEffect(() => {
+        if (updateLoading) {
+            toast.loading('Updating cbt...', {
+                toastId: 'UPDATETOAST'
+            })
+            setLoading(true)
+        }
+
+        if (updateError) {
+            setTimeout(() => {
+                toast.update('UPDATETOAST', {
+                    render: 'Something went wrong',
+                    type: toast.TYPE.ERROR,
+                    autoClose: 2000,
+                    closeButton: true,
+                    isLoading: false
+                })
+                setLoading(false)
+            }, 1000)
+        }
+
+        if (updateSuccess) {
+            setTimeout(() => {
+                toast.update('UPDATETOAST', {
+                    render: 'Updated',
+                    type: toast.TYPE.SUCCESS,
+                    autoClose: 2000,
+                    closeButton: true,
+                    isLoading: false
+                })
+                refetch()
+                setLoading(false)
+                setCreate(0)
+            }, 1000)
+        }
+        return () => clearTimeout()
+    }, [updateSuccess, updateError, updateLoading])
+
     const handleCreate = async (data) => {
         await insert({ body: data })
+    }
+
+
+
+    const toggleArchived = async (id, archived) => {
+        await update({
+            url: `cbts/${id}`,
+            body: {
+                archived: !archived
+            }
+        })
+
     }
 
 
@@ -97,6 +151,13 @@ const CbtMain = () => {
                                     title={row.title}
                                     subHeader={formatDate(row.startDate)}
                                     imgUrl={row.imgUrl}
+                                    archived={row.archived}
+                                    onArchived={() => {
+                                        toggleArchived(row.id, row.archived)
+                                    }}
+                                    onUnArchived={() => {
+                                        toggleArchived(row.id, row.archived)
+                                    }}
                                 >
                                     <Box padding={4}>
                                         <Grid container direction={'row'} padding={1} alignItems={'baseline'}>
@@ -181,7 +242,7 @@ const CbtMain = () => {
             </TabPanel>
 
             <TabPanel value={create} index={1}>
-                <CbtEditor variant={'new'}
+                <CbtEditorForm
                     onCancel={(e) => {
                         setCreate(0)
                     }}

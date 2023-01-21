@@ -1,16 +1,18 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Card, CardHeader, CardMedia, Divider, Grid, ListItemIcon, ListItemText, MenuItem, Typography } from '@mui/material'
+import { Card, CardHeader, CardMedia, Chip, Divider, Grid, ListItemIcon, ListItemText, MenuItem, Typography } from '@mui/material'
 import MenuAction from '../Menu/MenuAction'
 import EditIcon from '@mui/icons-material/Edit';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import { useNavigate } from 'react-router-dom';
 import EmptyImage from '../../assets/img/default-pictures.png'
 import { blueGrey } from '@mui/material/colors';
+import { Unarchive } from '@mui/icons-material';
+import { Box } from '@mui/system';
 
 
 const CbtCard = props => {
-    const { title, subHeader, imgUrl, children, id } = props
+    const { title, subHeader, imgUrl, children, id, archived, onArchived, onUnArchived } = props
     const navigate = useNavigate()
 
     const handleEdit = (e) => {
@@ -37,18 +39,40 @@ const CbtCard = props => {
                         </MenuItem>
                         <Divider />
 
-                        <MenuItem key={`${title}-archive`}>
-                            <ListItemIcon>
-                                <ArchiveIcon />
-                            </ListItemIcon>
-                            <ListItemText>
-                                Archive
-                            </ListItemText>
-                        </MenuItem>
+                        {
+                            !archived ?
+                                <MenuItem key={`${title}-archive`} onClick={onArchived}>
+                                    <ListItemIcon>
+                                        <ArchiveIcon />
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        Archive
+                                    </ListItemText>
+                                </MenuItem>
+                                :
+                                <MenuItem key={`${title}-unarchive`} onClick={onUnArchived}>
+                                    <ListItemIcon >
+                                        <Unarchive />
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        Unarchive
+                                    </ListItemText>
+                                </MenuItem>
+                        }
+
+
 
                     </MenuAction>
                 }
-                title={title}
+                title={
+                    <Box display={'flex'} gap={2} alignItems={'baseline'}>
+                        <Typography variant='h6' fontWeight={'bold'}>{title}</Typography>
+
+
+                        {archived && <Chip label={'archived'} variant={'outlined'} color={'info'} sx={{ mr: 2 }} />}
+
+                    </Box>
+                }
                 subheader={subHeader}
             >
 
@@ -87,7 +111,17 @@ CbtCard.propTypes = {
     title: PropTypes.string,
     subHeader: PropTypes.string,
     imgUrl: PropTypes.string,
-    children: PropTypes.node
+    children: PropTypes.node,
+    archived: PropTypes.bool,
+    onArchived: PropTypes.func,
+    onUnArchived: PropTypes.func
+}
+
+
+CbtCard.defaultValue = {
+    onArchived: () => { },
+    onUnArchived: () => { },
+    archived: false
 }
 
 export default CbtCard

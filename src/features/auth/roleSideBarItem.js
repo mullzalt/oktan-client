@@ -1,4 +1,4 @@
-import { Announcement, AssignmentInd, CreditCard, Dashboard, HistoryEdu, LocalLibrary, MilitaryTech, Newspaper, People, Person } from '@mui/icons-material'
+import { Announcement, AssignmentInd, CreditCard, Dashboard, HistoryEdu, LocalLibrary, MilitaryTech, Newspaper, Note, People, Person, RequestPage } from '@mui/icons-material'
 import { Divider, ListItem, ListSubheader, Typography } from '@mui/material'
 import ListItemLink from '../../components/Navigation/ListItemLink'
 
@@ -18,6 +18,7 @@ const sideBarList = {
         <ListItemLink to='/moderator/competitions' primary='Competitions' icon={<MilitaryTech/>}  />
         <ListItemLink to='/moderator/competitions' primary='Papers' icon={<HistoryEdu/>}  />
         <ListItemLink to='/moderator/cbts' primary='CBT' icon={<LocalLibrary/>}  />
+        <ListItemLink to='/moderator/cbts' primary='CBT Token Request' icon={<Note/>}  />
       
         <ListSubheader>Payments Management</ListSubheader>
         <ListItemLink to='/moderator/invoices' primary='Payment Log' icon={<CreditCard/>}  />
@@ -35,8 +36,10 @@ const sideBarList = {
   
   peserta: 
     <>
-        <ListItemLink to='/' primary='Dashboard' />
-        <ListItemLink to='/home' primary='home'  />
+        <ListItemLink to='/dashboard' primary='Dashboard' icon={<Dashboard/>} />
+        <Divider/>
+        <ListSubheader>Competitions</ListSubheader>
+        <ListItemLink to='/cbts' primary='CBT' icon={<LocalLibrary/>}  />
     </>,
   
   
